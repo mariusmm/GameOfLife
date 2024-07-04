@@ -29,8 +29,8 @@ impl Board {
     fn count_neighbors(&self, x: i32, y: i32) -> usize {
         let mut count = 0;
 
-        for x_idx in -1..1 {
-            for y_idx in -1..1 {
+        for x_idx in [-1, 0, 1] {
+            for y_idx in [-1, 0, 1] {
                 if x + x_idx < 0
                     || x + x_idx >= self.width as i32
                     || y + y_idx < 0
@@ -58,21 +58,20 @@ impl Board {
                 _ => false,
             }
         } else {
-            if num_neigh == 3 {
-                true
-            } else {
-                false
-            }
+            num_neigh == 3
         }
     }
 
     fn print(&self) {
+        println!("**************************************************************************");
+        for y_idx in 0..self.height {
         for x_idx in 0..self.width {
-            for y_idx in 0..self.height {
                 if self.get(x_idx, y_idx) {
-                    print!("\u{25A0}");
+                    //print!("\u{25A0}");
+                    print!("*");
                 } else {
-                    print!("\u{25A1}");
+                    //print!("\u{25A1}");
+                    print!(" ");
                 }
             }
             println!();

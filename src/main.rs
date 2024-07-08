@@ -1,7 +1,6 @@
 mod board;
 
 use board::{Board, CellState};
-use std::cmp::PartialEq;
 use rand::prelude::*;
 use std::{thread, time::Duration};
 
@@ -10,7 +9,7 @@ fn main() {
     const HEIGHT: usize = 10;
     let mut board = Board::new(WIDTH, HEIGHT);
     let mut rng = thread_rng();
-    // board.set(rng.gen_range(0..WIDTH), rng.gen_range(0..HEIGHT), CellState::Alive);
+
     for _ in 0..(WIDTH * HEIGHT / 4) {
         board.set(rng.gen_range(0..WIDTH), rng.gen_range(0..HEIGHT), CellState::Alive);
     }

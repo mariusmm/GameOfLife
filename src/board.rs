@@ -1,27 +1,19 @@
-#[derive(Clone)]
+use std::cmp::PartialEq;
+#[derive(Clone, PartialEq)]
 pub enum CellState {
     Dead,
     Alive,
 }
+
 #[derive(Clone)]
 struct Cell {
-    alive: crate::CellState,
+    alive: CellState,
 }
 #[derive(Clone)]
 pub struct Board {
     cells: Vec<Cell>,
     width: usize,
     height: usize,
-}
-
-impl PartialEq for &CellState {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (CellState::Dead, CellState::Dead) => true,
-            (CellState::Alive, CellState::Alive) => true,
-            _ => false,
-        }
-    }
 }
 
 impl Board {
@@ -83,5 +75,39 @@ impl Board {
             }
             println!();
         }
+    }
+}
+#[cfg(test)]
+mod tests {
+    use std::cmp::PartialEq;
+    use super::*;
+
+
+
+    #[test]
+    fn test_new_board() {
+        let board = Board::new(3, 3);
+        assert_eq!(board.width, 3);
+        assert_eq!(board.height, 3);
+        assert_eq!(board.cells.len(), 9);
+        assert!(board.cells.iter().all(|cell| cell.alive == CellState::Dead));
+    }
+
+    #[test]
+    fn test_set_and_get() {
+        let mut board = Board::new(3, 3);
+        board.set(1, 1, CellState::Alive);
+        assert!(board.get(1, 1) == &CellState::Alive);
+        board.set(1, 1, CellState::Dead);
+        assert!(board.get(1, 1) == &CellState::Dead);
+    }
+
+    #[test]
+    fn test_count_neighbors() {
+        let mut board = Board::new(3, 3);
+        board.set(0, 0, CellState::Alive);
+        board.set(0, 1, CellState::Alive);
+        board.set(1, 0, CellState::Alive);
+        assert_eq!(board.count_alive_neighbors(1, 1), 3);
     }
 }

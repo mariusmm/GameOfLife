@@ -1,0 +1,7 @@
+Acabeu el programa perquè jugui al game of life:
+
+Afegir alguna funció per inicialitzar el tauler FET
+Aplicar les regles i actualitzar el tauler FET
+Fer alguna prova per fer tests unitaris en Rust FET
+Organitzeu be el codi en mòduls FET
+Feu el codi el més "rusty" possible (?)

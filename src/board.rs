@@ -19,10 +19,12 @@ impl Board {
     }
 
     pub fn get(&self, x: usize, y: usize) -> bool {
+        assert!(x < self.width && y < self.height);
         self.cells[y * self.width + x].alive
     }
 
     pub fn set(&mut self, x: usize, y: usize, alive: bool) {
+        assert!(x < self.width && y < self.height);
         self.cells[y * self.width + x].alive = alive;
     }
 
@@ -74,11 +76,9 @@ impl Board {
         for y_idx in 0..self.height {
             for x_idx in 0..self.width {
                 if self.get(x_idx, y_idx) {
-                    print!("\u{25A0}");
-                    //print!("*");
+                    print!("\u{2B1C}");
                 } else {
-                    //print!("\u{25A1}");
-                    print!(" ");
+                    print!("\u{2B1B}");
                 }
             }
             println!();
@@ -98,10 +98,63 @@ impl Board {
     }
 
     pub fn set_glider(&mut self, x: usize, y: usize) {
+        assert!(x >= 1 && y >= 1);
         self.set(x, y - 1, true);
         self.set(x + 1, y, true);
         self.set(x - 1, y + 1, true);
         self.set(x, y + 1, true);
         self.set(x + 1, y + 1, true);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn test_x_y() {
+        let mut board = Board::new(5, 5);
+        board.set(0, 4, true);
+        board.set(0, 0, true);
+        board.set(1, 2, true);
+        board.set(2, 3, true);
+        board.print();
+    }
+
+    #[test]
+    fn test_board() {
+        let mut board = Board::new(5, 5);
+        board.set_glider(1, 1);
+        board.print();
+    }
+
+    #[test]
+    fn test_count_neighbors() {
+        let mut board = Board::new(5, 5);
+        board.set_glider(1, 1);
+        let count = board.count_neighbors(1, 1);
+        assert_eq!(count, 5);
+        let count = board.count_neighbors(0, 0);
+        assert_eq!(count, 1);
+        let count = board.count_neighbors(0, 1);
+        assert_eq!(count, 3);
+        let count = board.count_neighbors(1, 3);
+        assert_eq!(count, 3);
+        let count = board.count_neighbors(0, 3);
+        assert_eq!(count, 2);
+    }
+
+    #[test]
+    fn test_apply_rules() {
+        let mut board = Board::new(5, 5);
+        board.set_glider(1, 1);
+        board.print();
+        let rules = board.apply_rules(1, 1);
+        assert!(!rules);
+        let rules = board.apply_rules(1, 2);
+        assert!(rules);
+        let rules = board.apply_rules(1, 3);
+        assert!(rules);
     }
 }

@@ -1,19 +1,42 @@
+use std::env;
 use std::time::Instant;
 
 mod board;
 fn main() {
     const WIDTH: usize = 1000;
     const HEIGHT: usize = 1000;
+    const ITERATIONS: usize = 100;
+
+    let args: Vec<String> = env::args().collect();
 
     println!("Starting game of life!");
+    let mut my_board_a;
+    let mut my_board_b;
+    let num_iteracions;
 
-    let mut my_board_a = board::Board::new(WIDTH, HEIGHT);
-    let mut my_board_b = board::Board::new(WIDTH, HEIGHT);
+    if args.len() >= 4 {
+        let width = args[1].parse::<usize>().unwrap();
+        let height = args[2].parse::<usize>().unwrap();
+        let iterations = args[3].parse::<usize>().unwrap();
+        println!(
+            "Width: {} height: {} iterations: {} ",
+            width, height, iterations
+        );
+        my_board_a = board::Board::new(width, height);
+        my_board_b = board::Board::new(width, height);
+        num_iteracions = iterations;
+    } else {
+        my_board_a = board::Board::new(WIDTH, HEIGHT);
+        my_board_b = board::Board::new(WIDTH, HEIGHT);
+        num_iteracions = ITERATIONS;
+        println!(
+            "Width: {} height: {} iterations: {} ",
+            WIDTH, HEIGHT, ITERATIONS
+        );
+    }
 
     my_board_a.random_init();
     my_board_a.set_glider(5, 5);
-
-    let num_iteracions = 10;
 
     let mut ab = true;
 

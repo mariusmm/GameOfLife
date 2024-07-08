@@ -42,7 +42,7 @@ fn main() {
 
     let start = Instant::now();
 
-    for _ in 1..num_iteracions {
+    for _ in 0..num_iteracions {
         if ab {
             for x_idx in 0..my_board_a.get_width() {
                 for y_idx in 0..my_board_a.get_height() {
@@ -66,9 +66,9 @@ fn main() {
     let duration = start.elapsed();
 
     if ab {
-        my_board_a.print();
+        //my_board_a.print();
     } else {
-        my_board_b.print();
+        //my_board_b.print();
     }
 
     println!("Elapsed time: {:?}", duration);

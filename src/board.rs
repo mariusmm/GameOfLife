@@ -71,6 +71,7 @@ impl Board {
         }
     }
 
+    #[allow(dead_code)]
     pub fn print(&self) {
         println!("**************************************************************************");
         for y_idx in 0..self.height {

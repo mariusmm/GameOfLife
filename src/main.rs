@@ -1,3 +1,7 @@
+use std::thread::current;
+use std::time::Duration;
+use std::thread::sleep;
+
 #[derive(Clone)]
 struct Cell {
     alive: bool,
@@ -12,21 +16,30 @@ struct Board {
 impl Board {
     fn new(width: usize, height: usize) -> Board {
         Board {
-            cells: vec![Cell { alive: false }; width * height],
+            cells: vec![Cell { alive: false }; (width * height) as usize],
             width,
             height,
         }
     }
 
-    fn get(&self, x: usize, y: usize) -> bool {
+
+    fn get_cells(&self, x: usize, y: usize) -> bool {
         self.cells[y * self.width + x].alive
+    }
+
+    fn get_height(&self) -> usize {
+        self.height
+    }
+
+    fn get_width(&self) -> usize{
+        self.width
     }
 
     fn set(&mut self, x: usize, y: usize, alive: bool) {
         self.cells[y * self.width + x].alive = alive;
     }
 
-    fn count_neighbors(&self, x: i32, y: i32) -> usize {
+    fn count_neighbors(&self, x: i32, y: i32) -> i32 {
         let mut count = 0;
 
         for x_idx in [-1, 0, 1] {
@@ -39,7 +52,7 @@ impl Board {
                 {
                     continue;
                 }
-                if self.get((x + x_idx) as usize, (y + y_idx) as usize) {
+                if self.get_cells((x + x_idx) as usize, (y + y_idx) as usize) {
                     count += 1;
                 }
             }
@@ -49,7 +62,7 @@ impl Board {
 
     fn apply_rules(&self, x: i32, y: i32) -> bool {
         let num_neigh = self.count_neighbors(x, y);
-        if self.get(x as usize, y as usize) {
+        if self.get_cells(x as usize, y as usize) {
             match num_neigh {
                 0 => false,
                 1 => false,
@@ -62,16 +75,23 @@ impl Board {
         }
     }
 
+
+    fn init(&mut self, target_list:Vec<(usize,usize)>) {
+        for i in target_list{
+            self.set(i.0,i.1,true);
+        }
+    }
+
     fn print(&self) {
         println!("**************************************************************************");
         for y_idx in 0..self.height {
         for x_idx in 0..self.width {
-                if self.get(x_idx, y_idx) {
+                if self.get_cells(x_idx, y_idx) {
                     //print!("\u{25A0}");
-                    print!("*");
+                    print!("■ ");
                 } else {
                     //print!("\u{25A1}");
-                    print!(" ");
+                    print!("□ ");
                 }
             }
             println!();
@@ -80,8 +100,66 @@ impl Board {
 }
 
 fn main() {
-    println!("Hello, world!");
+    let n_size:usize = 20;
+    let m_size:usize= 20;
 
-    let my_board = Board::new(50, 50);
-    my_board.print();
+    let mut my_board = Board::new(m_size, n_size);
+    let mut swap_board: Board  = Board::new(m_size, n_size);
+    let n:usize= my_board.get_height();
+    let m:usize = my_board.get_width();
+    //Aqui estaria be treballar amb apuntadors, pero com que Rust ho determina unsafe, de momento ho evitareç
+    let mut target_list:Vec<(usize, usize)>= Vec::new();
+    target_list.push((1,2));
+    target_list.push((2,3));
+    target_list.push((3,1));
+    target_list.push((3,2));
+    target_list.push((3,3));
+
+    my_board.init(target_list);
+
+
+    loop{
+
+        for i in 0..m{
+            for j in 0..n{
+                swap_board.set(i, j, my_board.apply_rules(i as i32, j as i32));
+            }
+        }
+        for i in 0..m{
+            for j in 0..n{
+                my_board.set(i,j,swap_board.get_cells(i, j))
+            }
+        }
+        sleep(Duration::from_millis(250));
+        my_board.print();
+    }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+}
+
+
+
+#[cfg(test)]
+mod test_game_of_life{
+    use super::*;
+
+    #[test]
+    fn init_test(){
+        let mut test_board: Board = Board::new(10,10);
+        let mut temp_vector:Vec<(usize,usize)> = Vec::new();
+        temp_vector.push((1,1));
+
+        assert_eq!(test_board.get_cells(1,1),false);
+        test_board.init(temp_vector);
+        assert_eq!(test_board.get_cells(1,1),true);
+    }
 }

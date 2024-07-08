@@ -1,3 +1,6 @@
+use minifb::{Key, Window, WindowOptions};
+
+
 #[derive(Clone)]
 struct Cell {
     alive: bool,
@@ -77,9 +80,9 @@ impl Board {
         for y_idx in 0..self.height {
             for x_idx in 0..self.width {
                 if self.get(x_idx, y_idx) {
-                    print!("*");
+                    print!("🟢");
                 } else {
-                    print!(" ");
+                    print!("⚪");
                 }
             }
             println!();
@@ -89,17 +92,49 @@ impl Board {
 }
 
 fn main() {
-    let mut my_board = Board::new(100, 30);
+    let width = 50;
+    let height = 50;
+    let mut my_board = Board::new(width, height);
 
+    // Initializing a simple pattern: a glider
     my_board.set(1, 0, true);
     my_board.set(2, 1, true);
     my_board.set(0, 2, true);
     my_board.set(1, 2, true);
     my_board.set(2, 2, true);
 
-    for _ in 0..10 {
-        my_board.print();
+    let mut window = Window::new(
+        "Conway's Game of Life",
+        width * 10,
+        height * 10,
+        WindowOptions::default(),
+    )
+    .unwrap_or_else(|e| {
+        panic!("{}", e);
+    });
+
+    while window.is_open() && !window.is_key_down(Key::Escape) {
+        let mut buffer: Vec<u32> = vec![0; width * height * 100];
+
+        for y in 0..height {
+            for x in 0..width {
+                let color = if my_board.get(x, y) {
+                    0x00FF00 // Green for alive cells
+                } else {
+                    0x000000 // Black for dead cells
+                };
+
+                for dy in 0..10 {
+                    for dx in 0..10 {
+                        buffer[(y * 10 + dy) * width * 10 + (x * 10 + dx)] = color;
+                    }
+                }
+            }
+        }
+
+        window.update_with_buffer(&buffer, width * 10, height * 10).unwrap();
+
         my_board = my_board.next_generation();
-        std::thread::sleep(std::time::Duration::from_millis(500)); // To slow down the output
+        std::thread::sleep(std::time::Duration::from_millis(500));
     }
 }

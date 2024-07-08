@@ -1,45 +1,58 @@
+use std::cmp::PartialEq;
+use rand::prelude::*;
+use std::{thread, time::Duration};
+
+#[derive(Clone)]
+enum CellState {
+    Dead,
+    Alive,
+}
 #[derive(Clone)]
 struct Cell {
-    alive: bool,
+    alive: CellState,
 }
-
+#[derive(Clone)]
 struct Board {
     cells: Vec<Cell>,
     width: usize,
     height: usize,
 }
 
+impl PartialEq for &CellState {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (CellState::Dead, CellState::Dead) => true,
+            (CellState::Alive, CellState::Alive) => true,
+            _ => false,
+        }
+    }
+}
+
 impl Board {
     fn new(width: usize, height: usize) -> Board {
         Board {
-            cells: vec![Cell { alive: false }; width * height],
+            cells: vec![Cell { alive: CellState::Dead }; width * height],
             width,
             height,
         }
     }
-
-    fn get(&self, x: usize, y: usize) -> bool {
-        self.cells[y * self.width + x].alive
+    fn get(&self, x: usize, y: usize) -> &CellState {
+        &self.cells[y * self.width + x].alive
     }
-
-    fn set(&mut self, x: usize, y: usize, alive: bool) {
-        self.cells[y * self.width + x].alive = alive;
+    fn set(&mut self, x: usize, y: usize, state: CellState) {
+        self.cells[y * self.width + x].alive = state;
     }
-
-    fn count_neighbors(&self, x: i32, y: i32) -> usize {
+    fn count_alive_neighbors(&self, x: i32, y: i32) -> usize {
         let mut count = 0;
-
-        for x_idx in [-1, 0, 1] {
-            for y_idx in [-1, 0, 1] {
+        for x_idx in [-1,0,1]{
+            for y_idx in [-1,0,1]{
                 if x + x_idx < 0
                     || x + x_idx >= self.width as i32
                     || y + y_idx < 0
-                    || y + y_idx >= self.height as i32
-                    || x_idx == 0 && y_idx == 0
-                {
+                    || y + y_idx >= self.height as i32{
                     continue;
                 }
-                if self.get((x + x_idx) as usize, (y + y_idx) as usize) {
+                if self.get((x + x_idx) as usize, (y + y_idx) as usize) == &CellState::Alive{
                     count += 1;
                 }
             }
@@ -47,31 +60,29 @@ impl Board {
         count
     }
 
-    fn apply_rules(&self, x: i32, y: i32) -> bool {
-        let num_neigh = self.count_neighbors(x, y);
-        if self.get(x as usize, y as usize) {
-            match num_neigh {
-                0 => false,
-                1 => false,
-                2 => true,
-                3 => true,
-                _ => false,
+    fn apply_rules(&self, x: i32, y: i32) -> CellState {
+        let alive_neighbors = self.count_alive_neighbors(x, y);
+
+        if self.get(x as usize, y as usize) == &CellState::Alive{
+            match alive_neighbors {
+                2 | 3 => CellState::Alive,
+                _ => CellState::Dead,
             }
         } else {
-            num_neigh == 3
+            match alive_neighbors {
+                3 => CellState::Alive,
+                _ => CellState::Dead,
+            }
         }
     }
 
-    fn print(&self) {
-        println!("**************************************************************************");
-        for y_idx in 0..self.height {
-        for x_idx in 0..self.width {
-                if self.get(x_idx, y_idx) {
-                    //print!("\u{25A0}");
-                    print!("*");
-                } else {
-                    //print!("\u{25A1}");
-                    print!(" ");
+    fn print_board(&self){
+        for y in 0..self.height{
+            for x in 0..self.width{
+
+                match self.get(x, y){
+                    CellState::Alive => print!("🙋‍ \t"),
+                    CellState::Dead => print!("😵 \t"),
                 }
             }
             println!();
@@ -79,9 +90,31 @@ impl Board {
     }
 }
 
-fn main() {
-    println!("Hello, world!");
 
-    let my_board = Board::new(50, 50);
-    my_board.print();
+fn main() {
+    const WIDTH: usize = 10;
+    const HEIGHT: usize = 10;
+    let mut board = Board::new(WIDTH, HEIGHT);
+    let mut rng = thread_rng();
+    // board.set(rng.gen_range(0..WIDTH), rng.gen_range(0..HEIGHT), CellState::Alive);
+    for _ in 0..(WIDTH * HEIGHT / 4) {
+        board.set(rng.gen_range(0..WIDTH), rng.gen_range(0..HEIGHT), CellState::Alive);
+    }
+
+
+    loop {
+        println!("Current Board:");
+        board.print_board();
+
+        let mut new_board = board.clone();
+        for y in 0..HEIGHT {
+            for x in 0..WIDTH {
+                new_board.set(x, y, board.apply_rules(x as i32, y as i32));
+            }
+        }
+        board = new_board;
+
+        thread::sleep(Duration::from_millis(500));
+        println!("\x1B[2J\x1B[1;1H");
+    }
 }

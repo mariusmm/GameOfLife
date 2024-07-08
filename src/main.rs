@@ -1,5 +1,4 @@
-use minifb::{Key, Window, WindowOptions};
-
+use minifb::{Key, MouseButton, Window, WindowOptions, Scale};
 
 #[derive(Clone)]
 struct Cell {
@@ -94,6 +93,8 @@ impl Board {
 fn main() {
     let width = 50;
     let height = 50;
+    let cell_size = 10;
+    let top_bar_height = 30;
     let mut my_board = Board::new(width, height);
 
     // Initializing a simple pattern: a glider
@@ -105,17 +106,56 @@ fn main() {
 
     let mut window = Window::new(
         "Conway's Game of Life",
-        width * 10,
-        height * 10,
-        WindowOptions::default(),
+        width * cell_size,
+        height * cell_size + top_bar_height,
+        WindowOptions {
+            scale: Scale::X1,
+            ..WindowOptions::default()
+        },
     )
     .unwrap_or_else(|e| {
         panic!("{}", e);
     });
 
-    while window.is_open() && !window.is_key_down(Key::Escape) {
-        let mut buffer: Vec<u32> = vec![0; width * height * 100];
+    let mut buffer: Vec<u32> = vec![0; width * cell_size * (height * cell_size + top_bar_height)];
+    let mut running = false;
 
+    while window.is_open() && !window.is_key_down(Key::Escape) {
+        // Draw the controls
+        for x in 0..width * cell_size {
+            for y in 0..top_bar_height {
+                let color = 0xAAAAAA; // Gray color for the top bar
+                buffer[y * width * cell_size + x] = color;
+            }
+        }
+
+        // Labels for buttons
+        let labels = vec!["Start", "Stop", "Step"];
+        for (i, &label) in labels.iter().enumerate() {
+            let x = i * 60;
+            for dx in 0..50 {
+                for dy in 0..20 {
+                    buffer[(5 + dy) * width * cell_size + (10 + x + dx)] = 0xFFFFFF; // White color for button text
+                }
+            }
+        }
+
+        // Check for mouse clicks
+        if let Some((mx, my)) = window.get_mouse_pos(minifb::MouseMode::Discard) {
+            if window.get_mouse_down(MouseButton::Left) {
+                if my < top_bar_height as f32 {
+                    if mx < 60.0 {
+                        running = true; // Start button
+                    } else if mx < 120.0 {
+                        running = false; // Stop button
+                    } else if mx < 180.0 {
+                        my_board = my_board.next_generation(); // Step button
+                    }
+                }
+            }
+        }
+
+        // Update the buffer with the board state
         for y in 0..height {
             for x in 0..width {
                 let color = if my_board.get(x, y) {
@@ -124,17 +164,20 @@ fn main() {
                     0x000000 // Black for dead cells
                 };
 
-                for dy in 0..10 {
-                    for dx in 0..10 {
-                        buffer[(y * 10 + dy) * width * 10 + (x * 10 + dx)] = color;
+                for dy in 0..cell_size {
+                    for dx in 0..cell_size {
+                        buffer[(top_bar_height + y * cell_size + dy) * width * cell_size + (x * cell_size + dx)] = color;
                     }
                 }
             }
         }
 
-        window.update_with_buffer(&buffer, width * 10, height * 10).unwrap();
+        window.update_with_buffer(&buffer, width * cell_size, height * cell_size + top_bar_height).unwrap();
 
-        my_board = my_board.next_generation();
-        std::thread::sleep(std::time::Duration::from_millis(500));
+        if running {
+            my_board = my_board.next_generation();
+        }
+
+        std::thread::sleep(std::time::Duration::from_millis(100));
     }
 }

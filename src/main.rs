@@ -1,8 +1,56 @@
+use std::thread::sleep;
+use std::time::Duration;
+#[cfg(test)]
+mod tests{
+    use super::*;
+    #[test]
+    fn una_iter()
+    {
+        let mut board1 = Board::new(10, 10);
+        let mut board2 = Board::new(10, 10);
+        
+        board1.ejemplo_planador(5, 5);
+    
+        for y_idx in 0..board1.height {
+            for x_idx in 0..board2.width {
+                let alive: bool = board1.apply_rules(x_idx as i32, y_idx as i32);
+                    board2.set(x_idx, y_idx, alive);
+                }
+                
+        }
+    
+        let mut compr = Board::new(10, 10);
+        
+        
+        compr.set(6, 4, true);
+        compr.set(5, 5, true);
+        compr.set(6, 5, true);
+        compr.set(5, 6, true);
+        compr.set(7, 6, true);
+
+
+
+
+        let mut compr_b:bool = true;
+
+        for y_idx in 0..board2.height {
+            for x_idx in 0..board2.width{
+                    compr_b &= board2.get(x_idx, y_idx) == compr.get(x_idx, y_idx);
+                }
+        }
+        board2.print();
+        compr.print();
+        assert_eq!(compr_b, true);
+
+    }
+}
+
+
 #[derive(Clone)]
 struct Cell {
     alive: bool,
 }
-
+#[derive(Clone)]
 struct Board {
     cells: Vec<Cell>,
     width: usize,
@@ -65,23 +113,53 @@ impl Board {
     fn print(&self) {
         println!("**************************************************************************");
         for y_idx in 0..self.height {
-        for x_idx in 0..self.width {
-                if self.get(x_idx, y_idx) {
-                    //print!("\u{25A0}");
-                    print!("*");
-                } else {
-                    //print!("\u{25A1}");
+            for x_idx in 0..self.width {
+                    if self.get(x_idx, y_idx) {
+                        print!("\u{25A0}");
+                        //print!("*");
+                    } else {
+                        print!("\u{25A1}");
+                        //print!(" ");
+                    }
                     print!(" ");
                 }
-            }
-            println!();
+                println!();
         }
+    }
+
+    fn ejemplo_planador(&mut self, x: i32, y: i32)
+    {
+        self.set(x as usize, y as usize, true);
+        self.set((x+1) as usize, y as usize, true);
+        self.set((x+2) as usize, y as usize, true);
+        self.set(x as usize, (y+1) as usize, true);
+        self.set((x+2) as usize, (y+2) as usize, true);
     }
 }
 
 fn main() {
     println!("Hello, world!");
 
-    let my_board = Board::new(50, 50);
-    my_board.print();
+    let mut board1 = Board::new(50, 50);
+    let mut board2 = Board::new(50, 50);
+    
+    board1.ejemplo_planador(30, 30);
+    
+    board1.print();
+  
+
+    loop {
+        for y_idx in 0..board1.height {
+            for x_idx in 0..board1.width {
+                let alive: bool = board1.apply_rules(x_idx as i32, y_idx as i32);
+                    board2.set(x_idx, y_idx, alive);
+                }
+                
+        }
+    
+        board1 = board2.clone();
+        sleep(Duration::from_millis(500));
+        board1.print();
+    }
 }
+

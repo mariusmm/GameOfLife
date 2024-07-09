@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+rand = "0.8"  # Asegúrate de usar la última versión disponible
+sdl2 = "0.37.0"
+

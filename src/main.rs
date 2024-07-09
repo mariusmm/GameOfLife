@@ -1,87 +1,63 @@
-#[derive(Clone)]
-struct Cell {
-    alive: bool,
-}
-
-struct Board {
-    cells: Vec<Cell>,
-    width: usize,
-    height: usize,
-}
-
-impl Board {
-    fn new(width: usize, height: usize) -> Board {
-        Board {
-            cells: vec![Cell { alive: false }; width * height],
-            width,
-            height,
-        }
-    }
-
-    fn get(&self, x: usize, y: usize) -> bool {
-        self.cells[y * self.width + x].alive
-    }
-
-    fn set(&mut self, x: usize, y: usize, alive: bool) {
-        self.cells[y * self.width + x].alive = alive;
-    }
-
-    fn count_neighbors(&self, x: i32, y: i32) -> usize {
-        let mut count = 0;
-
-        for x_idx in [-1, 0, 1] {
-            for y_idx in [-1, 0, 1] {
-                if x + x_idx < 0
-                    || x + x_idx >= self.width as i32
-                    || y + y_idx < 0
-                    || y + y_idx >= self.height as i32
-                    || x_idx == 0 && y_idx == 0
-                {
-                    continue;
-                }
-                if self.get((x + x_idx) as usize, (y + y_idx) as usize) {
-                    count += 1;
-                }
-            }
-        }
-        count
-    }
-
-    fn apply_rules(&self, x: i32, y: i32) -> bool {
-        let num_neigh = self.count_neighbors(x, y);
-        if self.get(x as usize, y as usize) {
-            match num_neigh {
-                0 => false,
-                1 => false,
-                2 => true,
-                3 => true,
-                _ => false,
-            }
-        } else {
-            num_neigh == 3
-        }
-    }
-
-    fn print(&self) {
-        println!("**************************************************************************");
-        for y_idx in 0..self.height {
-        for x_idx in 0..self.width {
-                if self.get(x_idx, y_idx) {
-                    //print!("\u{25A0}");
-                    print!("*");
-                } else {
-                    //print!("\u{25A1}");
-                    print!(" ");
-                }
-            }
-            println!();
-        }
-    }
-}
+use std::env;
+use std::time::Instant;
+mod board;
 
 fn main() {
-    println!("Hello, world!");
+    const WIDTH: usize = 50;
+    const HEIGHT: usize = 50;
+    const ITERATIONS: usize = 100;
 
-    let my_board = Board::new(50, 50);
-    my_board.print();
+    let args: Vec<String> = env::args().collect();
+
+    println!("Starting game of life!");
+    let mut my_board_a;
+    let mut my_board_b;
+    let num_iterations;
+
+    if args.len() >= 4 {
+        let width = args[1].parse::<usize>().unwrap();
+        let height = args[2].parse::<usize>().unwrap();
+        let iterations = args[3].parse::<usize>().unwrap();
+        println!(
+            "Width: {} height: {} iterations: {} ",
+            width, height, iterations
+        );
+        my_board_a = board::Board::new(width, height);
+        my_board_b = board::Board::new(width, height);
+        num_iterations = iterations;
+    } else {
+        my_board_a = board::Board::new(WIDTH, HEIGHT);
+        my_board_b = board::Board::new(WIDTH, HEIGHT);
+        num_iterations = ITERATIONS;
+        println!(
+            "Width: {} height: {} iterations: {} ",
+            WIDTH, HEIGHT, ITERATIONS
+        );
+    }
+
+    my_board_a.random_init();
+    my_board_a.set_glider(5, 5);
+
+    let mut ab = true;
+
+    let start = Instant::now();
+
+    for _ in 0..num_iterations {
+        if ab {
+            my_board_a.evolve(&mut my_board_b);
+        } else {
+            my_board_b.evolve(&mut my_board_a);
+        }
+        ab = !ab;
+    }
+
+    let duration = start.elapsed();
+
+    if ab {
+        my_board_a.print();
+    } else {
+        my_board_b.print();
+    }
+
+    println!("Elapsed time: {:?}", duration);
 }

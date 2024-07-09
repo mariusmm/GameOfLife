@@ -1,11 +1,13 @@
-use std::thread::current;
+use std::thread;
 use std::time::Duration;
 use std::thread::sleep;
+use std::sync::{Arc,Mutex};
 
 #[derive(Clone)]
 struct Cell {
     alive: bool,
 }
+
 
 struct Board {
     cells: Vec<Cell>,
@@ -100,14 +102,15 @@ impl Board {
 }
 
 fn main() {
-    let n_size:usize = 20;
-    let m_size:usize= 20;
 
-    let mut my_board = Board::new(m_size, n_size);
-    let mut swap_board: Board  = Board::new(m_size, n_size);
+    let n_size:usize = 1000;
+    let m_size:usize= 1000;
+
+    let mut my_board =Board::new(m_size, n_size);
+    let swap_board = Arc::new(Mutex::new(Board::new(m_size, n_size)));
     let n:usize= my_board.get_height();
     let m:usize = my_board.get_width();
-    //Aqui estaria be treballar amb apuntadors, pero com que Rust ho determina unsafe, de momento ho evitareç
+    //Aqui estaria be treballar amb apuntadors, pero com que Rust ho determina unsafe, de momento ho evitare
     let mut target_list:Vec<(usize, usize)>= Vec::new();
     target_list.push((1,2));
     target_list.push((2,3));
@@ -116,22 +119,39 @@ fn main() {
     target_list.push((3,3));
 
     my_board.init(target_list);
-
-
+    
+    let my_board =Arc::new(Mutex::new(my_board));
     loop{
+        let mut handles = vec![];
+        for i in 0..m{
+            let inner_my_board = Arc::clone(&my_board);
+            let inner_swap_board = Arc::clone(&swap_board);
+            let handle = thread::spawn(move || {
+                for j in 0..n{
+                    inner_swap_board.lock().unwrap().set(i, j, inner_my_board.lock().unwrap().apply_rules(i as i32, j as i32));
+                }
+            });
+            handles.push(handle)
+        }
+        for handle in handles{
+            handle.join().unwrap();
+        }
 
+        let mut handles = vec![];
         for i in 0..m{
-            for j in 0..n{
-                swap_board.set(i, j, my_board.apply_rules(i as i32, j as i32));
-            }
+            let inner_my_board = Arc::clone(&my_board);
+            let inner_swap_board = Arc::clone(&swap_board);
+            let handle = thread::spawn(move || {
+                for j in 0..n{
+                    inner_my_board.lock().unwrap().set(i,j,inner_swap_board.lock().unwrap().get_cells(i, j))
+                }
+            });
+            handles.push(handle)
         }
-        for i in 0..m{
-            for j in 0..n{
-                my_board.set(i,j,swap_board.get_cells(i, j))
-            }
+        for handle in handles{
+            handle.join().unwrap();
         }
-        sleep(Duration::from_millis(250));
-        my_board.print();
+        my_board.lock().unwrap().print();
     }
         
         

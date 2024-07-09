@@ -32,10 +32,6 @@ impl Board {
         self.height
     }
 
-    pub fn get_width(&self) -> usize {
-        self.width
-    }
-
     fn count_neighbors(&self, x: i32, y: i32) -> usize {
         let mut count = 0;
 

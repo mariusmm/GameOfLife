@@ -1,81 +1,104 @@
-use minifb::{Key, MouseButton, Window, WindowOptions, Scale};
+use ggez;
+use ggez::graphics;
+use ggez::input::keyboard; 
+use ggez::input::mouse;
+
 use crate::board::Board;
+use ggez::event::EventHandler;
 
-pub fn run_app(width: usize, height: usize, cell_size: usize, top_bar_height: usize, mut my_board: Board) {
-    let mut window = Window::new(
-        "Conway's Game of Life",
-        width * cell_size,
-        height * cell_size + top_bar_height,
-        WindowOptions {
-            scale: Scale::X1,
-            ..WindowOptions::default()
-        },
-    )
-    .unwrap_or_else(|e| {
-        panic!("{}", e);
-    });
+pub struct Game {
+    board: Board,
+    running: bool,
 
-    let mut buffer: Vec<u32> = vec![0; width * cell_size * (height * cell_size + top_bar_height)];
-    let mut running = false;
+    frames: usize,
+    fps: String,
+}
 
-    while window.is_open() && !window.is_key_down(Key::Escape) {
-        // Draw the controls
-        for x in 0..width * cell_size {
-            for y in 0..top_bar_height {
-                let color = 0xAAAAAA; // Gray
-                buffer[y * width * cell_size + x] = color;
+impl Game {
+    pub fn new(ctx: &mut ggez::Context) -> ggez::GameResult<Game> {
+        ctx.gfx.add_font(
+            "LiberationMono",
+            graphics::FontData::from_path(ctx, "/LiberationMono-Regular.ttf")?,
+        );
+
+        let g = Game {
+            board: Board::new(50, 50),
+            running: false,
+
+            frames: 0,
+            fps: format!("FPS: {}", ctx.time.fps() as i64),
+
+        };
+        Ok(g)
+    }
+
+    fn draw_ui(&mut self, ctx: &mut ggez::Context, canvas: &mut graphics::Canvas) -> ggez::GameResult {
+        
+        // let play_button = graphics::Text::new("Play");
+        // let stop_button = graphics::Text::new("Stop");
+        // let step_button = graphics::Text::new("Step");
+
+        // graphics::draw(ctx, &play_button, (ggez::mint::Point2 { x: 10.0, y: 10.0 },))?;
+        // graphics::draw(ctx, &stop_button, (ggez::mint::Point2 { x: 10.0, y: 30.0 },))?;
+        // graphics::draw(ctx, &step_button, (ggez::mint::Point2 { x: 10.0, y: 50.0 },))?;
+
+        self.frames += 1;
+        if (self.frames % 100) == 0 {
+            self.fps = format!("FPS: {}", ctx.time.fps() as i64);
+        }
+
+        canvas.draw(
+            graphics::Text::new(&self.fps)
+                .set_font("LiberationMono")
+                .set_scale(24.),
+                ggez::glam::Vec2::new(10.0, 10.0),
+        );
+
+
+        Ok(())
+    }
+}
+
+impl EventHandler<ggez::GameError> for Game {
+    fn update(&mut self, _ctx: &mut ggez::Context) -> ggez::GameResult<()> {
+        if self.running {
+            self.board = self.board.next_generation();
+        }
+        Ok(())
+    }
+
+    fn draw(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult<()> {
+        let mut canvas =
+        graphics::Canvas::from_frame(ctx, graphics::Color::from([0.0;4]));
+
+
+        // Render UI
+        self.draw_ui(ctx, &mut canvas)?;
+        
+
+        canvas.finish(ctx)?;
+        Ok(())
+    }
+
+    fn mouse_button_up_event(&mut self, _ctx: &mut ggez::Context, button: mouse::MouseButton, x: f32, y: f32) -> Result<(), ggez::GameError> {
+        if button == mouse::MouseButton::Left {
+            let x = (x / 10.0) as usize;
+            let y = (y / 10.0) as usize;
+            if x < self.board.width && y < self.board.height {
+                let current = self.board.get(x, y);
+                self.board.set(x, y, !current);
             }
         }
+        Ok(())
+    }
 
-        // Labels for buttons
-        let labels = vec!["Start", "Stop", "Step"];
-        for (i, &label) in labels.iter().enumerate() {
-            let x = i * 60;
-            for dx in 0..50 {
-                for dy in 0..20 {
-                    buffer[(5 + dy) * width * cell_size + (10 + x + dx)] = 0xFFFFFF; // White
-                }
-            }
+    fn key_up_event(&mut self, _ctx: &mut ggez::Context, input: keyboard::KeyInput) -> Result<(), ggez::GameError> {
+        match input.keycode {
+            Some(keyboard::KeyCode::P) => self.running = true,
+            Some(keyboard::KeyCode::S) => self.running = false,
+            Some(keyboard::KeyCode::Space) => self.board = self.board.next_generation(),
+            _ => {}
         }
-
-        // Check for mouse clicks
-        if let Some((mx, my)) = window.get_mouse_pos(minifb::MouseMode::Discard) {
-            if window.get_mouse_down(MouseButton::Left) {
-                if my < top_bar_height as f32 {
-                    if mx < 60.0 { // Start
-                        running = true;
-                    } else if mx < 120.0 { // Stop
-                        running = false;
-                    } else if mx < 180.0 { // Step
-                        my_board = my_board.next_generation();
-                    }
-                }
-            }
-        }
-
-        // Update the buffer with the board state
-        for y in 0..height {
-            for x in 0..width {
-                let color = if my_board.get(x, y) {
-                    0x00FF00 // Green
-                } else {
-                    0x000000 // Black
-                };
-
-                for dy in 0..cell_size {
-                    for dx in 0..cell_size {
-                        buffer[(top_bar_height + y * cell_size + dy) * width * cell_size + (x * cell_size + dx)] = color;
-                    }
-                }
-            }
-        }
-
-        window.update_with_buffer(&buffer, width * cell_size, height * cell_size + top_bar_height).unwrap();
-
-        if running {
-            my_board = my_board.next_generation();
-        }
-
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        Ok(())
     }
 }

@@ -72,20 +72,23 @@ impl Board {
         new_board
     }
 
-    pub fn print(&self) {
-        println!("**************************************************************************");
-        for y_idx in 0..self.height {
-            for x_idx in 0..self.width {
-                if self.get(x_idx, y_idx) {
-                    print!("🟢");
-                } else {
-                    print!("⚪");
-                }
-            }
-            println!();
-        }
-        println!("**************************************************************************");
-    }
+    // pub fn draw_board(&self, ctx: &mut Context, ) -> GameResult{
+    //     // Render game board
+    //     for y in 0..self.board.height {
+    //         for x in 0..self.board.width {
+    //             let color = if self.board.get(x, y) {
+    //                 graphics::Color::GREEN
+    //             } else {
+    //                 graphics::Color::WHITE
+    //             };
+    //             let rect = graphics::Rect::new_i32(x as i32 * 10, y as i32 * 10, 10, 10);
+    //             let square = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect, color)?;
+    //             graphics::draw(ctx, &square, graphics::DrawParam::default())?;
+    //         }
+    //     }
+
+    //     Ok(())
+    // }
 }
 
 #[cfg(test)]

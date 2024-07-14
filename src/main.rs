@@ -1,23 +1,34 @@
+use ggez::{ContextBuilder, GameResult};
+use ggez::event;
 mod board;
 mod graphics;
+use graphics::Game;
+use std::env;
+use std::path;
 
-use board::Board;
-use graphics::run_app;
+const GRID_SIZE: (i16, i16) = (30, 20);
+const GRID_CELL_SIZE: (i16, i16) = (32, 32);
 
-fn main() {
-    let width = 50;
-    let height = 50;
-    let cell_size = 10;
-    let top_bar_height = 30;
+const SCREEN_SIZE: (f32, f32) = (
+    GRID_SIZE.0 as f32 * GRID_CELL_SIZE.0 as f32,
+    GRID_SIZE.1 as f32 * GRID_CELL_SIZE.1 as f32,
+);
 
-    let mut my_board = Board::new(width, height);
+fn main() -> GameResult {
+    let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
+        let mut path = path::PathBuf::from(manifest_dir);
+        path.push("assets");
+        path
+    } else {
+        path::PathBuf::from("./assets")
+    };
 
-    // Initializing a simple pattern: a glider
-    my_board.set(1, 0, true);
-    my_board.set(2, 1, true);
-    my_board.set(0, 2, true);
-    my_board.set(1, 2, true);
-    my_board.set(2, 2, true);
 
-    run_app(width, height, cell_size, top_bar_height, my_board);
+    let ( mut ctx,  event_loop) = ContextBuilder::new("conways_game_of_life", "Jan Gras").add_resource_path(resource_dir)
+        .window_setup(ggez::conf::WindowSetup::default().title("conways_game_of_life!"))
+        .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
+        .build()?;
+    let game = Game::new(&mut ctx)?;
+
+    event::run(ctx, event_loop, game)
 }

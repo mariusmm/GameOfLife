@@ -1,10 +1,11 @@
 use ggez::{ContextBuilder, GameResult};
-use ggez::event;
 mod board;
 mod graphics;
+mod ui;
 use graphics::Game;
 use std::env;
 use std::path;
+use mooeye::scene_manager::SceneManager;
 
 const GRID_SIZE: (i16, i16) = (30, 20);
 const GRID_CELL_SIZE: (i16, i16) = (32, 32);
@@ -28,7 +29,7 @@ fn main() -> GameResult {
         .window_setup(ggez::conf::WindowSetup::default().title("conways_game_of_life!"))
         .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
         .build()?;
-    let game = Game::new(&mut ctx)?;
 
-    event::run(ctx, event_loop, game)
+	let game = Game::new(&mut ctx)?;
+	SceneManager::new_and_run(event_loop, ctx, game);
 }

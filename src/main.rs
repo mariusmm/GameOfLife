@@ -1,10 +1,17 @@
 use std::env;
 use std::time::Instant;
-#[warn(non_snake_case)]
 use std::io::{self, Write};
 
+#[warn(non_snake_case)]
+#[warn(non_upper_case_globals)]
+#[warn(dead_code)]
+
+const colors: [&str; 9] = ["🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "⬛", "⬜", "🟫"];
+
 mod board;
+
 fn main() {
+
     const WIDTH: usize = 10;
     const HEIGHT: usize = 10;
     const ITERATIONS: usize = 8;
@@ -15,13 +22,19 @@ fn main() {
     let mut my_board_a;
     let mut my_board_b;
     let num_iteracions;
-    let interactive_mode : bool;
+    
+    let chose_color = true;
+    let interactive_mode = prompt_for_interactive_mode();
+
+    if chose_color{
+        choose_colors();
+    }
 
     if args.len() >= 5 {
         let width = args[1].parse::<usize>().unwrap();
         let height = args[2].parse::<usize>().unwrap();
         let iterations = args[3].parse::<usize>().unwrap();
-        interactive_mode = args[4].parse::<bool>().unwrap_or(true);
+        //interactive_mode = args[4].parse::<bool>().unwrap_or(true);
         println!(
             "Width: {} height: {} iterations: {} interactive: {}",
             width, height, iterations, interactive_mode
@@ -30,26 +43,10 @@ fn main() {
         my_board_a = board::Board::new(width, height);
         my_board_b = board::Board::new(width, height);
         num_iteracions = iterations;
-        // check if interactive mode arg is provided
-        /*if args.len() >= 5 {
-            interactive_mode = args[4].parse::<bool>().unwrap();
-        }*/
-    } else if args.len() >= 4 {
-        let _width = args[1].parse::<usize>().unwrap();
-        let _height = args[2].parse::<usize>().unwrap();
-        let _iterations = args[3].parse::<usize>().unwrap();
-        interactive_mode = true; //default to true if the fourth arg is not provided
-        println!(
-            "Width: {} height: {} iterations: {} interactive: {} ",
-            WIDTH, HEIGHT, ITERATIONS, interactive_mode
-        );
-        my_board_a = board::Board::new(WIDTH, HEIGHT);
-        my_board_b = board::Board::new(WIDTH, HEIGHT);
-        num_iteracions = ITERATIONS;
     } else {
         my_board_a = board::Board::new(WIDTH, HEIGHT);
         my_board_b = board::Board::new(WIDTH, HEIGHT);
-        interactive_mode = true; //Default to true
+        //interactive_mode = true; //Default to true
         println!(
             "Width: {} height: {} iterations: {} interactive: {}",
             WIDTH, HEIGHT, ITERATIONS, interactive_mode
@@ -57,8 +54,6 @@ fn main() {
         num_iteracions = ITERATIONS;
     }
 
-    //my_board_a.random_init();
-    //my_board_a.set_glider(5, 5);
 
     let pattern = if args.len() > 5 { &args[5] } else { "random" };
     match pattern {
@@ -68,7 +63,6 @@ fn main() {
         _ => my_board_a.random_init(),
     }
 
-    //let separator = "--------............--------";
     let mut ab = true;
     let start = Instant::now();
 
@@ -121,11 +115,50 @@ fn main() {
 
     let duration = start.elapsed();
 
-    /*if ab {
-        //my_board_a.print();
-    } else {
-        //my_board_b.print();
-    }*/
-
     println!("Elapsed time: {:?}", duration);
+}
+
+
+fn choose_colors() {
+    println!("Choose the colors for Alive and Dead:");
+
+    
+    for (i, &color) in colors.iter().enumerate() {
+        println!("{}. {}", i + 1, color);
+    }
+
+    let alive_color = get_color_choice("Alive");
+    let dead_color = get_color_choice("Dead");
+
+    board::set_colors(alive_color, dead_color);
+}
+
+fn get_color_choice(name: &str) -> String {
+    loop {
+        print!("Enter the number for {} color: ", name);
+        io::stdout().flush().unwrap();
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+        match input.trim().parse::<usize>() {
+            Ok(num) if num >= 1 && num <= 9 => return colors[num - 1].to_string(),
+            _ => println!("Invalid input, please enter a number between 1 and 9."),
+        }
+    }
+}
+
+fn prompt_for_interactive_mode() -> bool {
+    loop {
+        print!("Do you want to interact with it? (y/n): ");
+        io::stdout().flush().unwrap(); // Ensure the prompt is displayed
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+
+        match input.trim() {
+            "n" => return false, // No means interactive_mode is false
+            "y" => return true,  // Yes means interactive_mode is true
+            _ => println!("Invalid input, please enter 'y' or 'n'."),
+        }
+    }
 }

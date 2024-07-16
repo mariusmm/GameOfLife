@@ -1,6 +1,12 @@
 #[warn(non_snake_case)] //convert snake case on default
-const ALIVE_EMOJI: &str = "🟩";
-const DEAD_EMOJI: &str = "⬜";
+//more colors ["🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "⬛", "⬜", "🟫"]
+//const ALIVE_EMOJI: &str = "🟥";
+//const DEAD_EMOJI: &str = "🟨";
+
+//const COLORS: [&str; 9] = ["🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "⬛", "⬜", "🟫"];
+
+static mut ALIVE_EMOJI: &str = "🟥";
+static mut DEAD_EMOJI: &str = "🟨";
 
 #[derive(Clone)]
 struct Cell {
@@ -92,9 +98,9 @@ impl Board {
         for y in 0..self.height {
             for x in 0..self.width {
                 if self.get(x, y) {
-                    print!("{}", ALIVE_EMOJI);
+                    print!("{}", unsafe{ALIVE_EMOJI});
                 } else {
-                    print!("{}", DEAD_EMOJI);
+                    print!("{}", unsafe{DEAD_EMOJI});
                 }
             }
             println!(); // New line at the end of each row
@@ -183,5 +189,12 @@ mod tests {
         assert!(rules);
         let rules = board.apply_rules(1, 3);
         assert!(rules);
+    }
+}
+
+pub fn set_colors(alive: String, dead: String) {
+    unsafe {
+        ALIVE_EMOJI = Box::leak(alive.into_boxed_str());
+        DEAD_EMOJI = Box::leak(dead.into_boxed_str());
     }
 }

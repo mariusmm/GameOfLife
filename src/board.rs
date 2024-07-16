@@ -1,3 +1,7 @@
+#[warn(non_snake_case)] //convert snake case on default
+const ALIVE_EMOJI: &str = "🟩";
+const DEAD_EMOJI: &str = "⬜";
+
 #[derive(Clone)]
 struct Cell {
     pub alive: bool,
@@ -17,6 +21,7 @@ impl Board {
             height,
         }
     }
+
 
     pub fn get(&self, x: usize, y: usize) -> bool {
         assert!(x < self.width && y < self.height);
@@ -74,7 +79,7 @@ impl Board {
     #[allow(dead_code)]
     pub fn print(&self) {
         println!("**************************************************************************");
-        for y_idx in 0..self.height {
+        /*for y_idx in 0..self.height {
             for x_idx in 0..self.width {
                 if self.get(x_idx, y_idx) {
                     print!("\u{2B1C}");
@@ -83,6 +88,16 @@ impl Board {
                 }
             }
             println!();
+        }*/
+        for y in 0..self.height {
+            for x in 0..self.width {
+                if self.get(x, y) {
+                    print!("{}", ALIVE_EMOJI);
+                } else {
+                    print!("{}", DEAD_EMOJI);
+                }
+            }
+            println!(); // New line at the end of each row
         }
     }
 
@@ -103,6 +118,17 @@ impl Board {
         self.set(x, y - 1, true);
         self.set(x + 1, y, true);
         self.set(x - 1, y + 1, true);
+        self.set(x, y + 1, true);
+        self.set(x + 1, y + 1, true);
+    }
+    pub fn set_blinker(&mut self, x:usize, y:usize){
+        self.set(x, y, true);
+        self.set(x, y + 1, true);
+        self.set(x, y + 2, true);
+    }
+    pub fn set_block(&mut self, x:usize, y:usize){
+        self.set(x, y, true);
+        self.set(x + 1, y, true);
         self.set(x, y + 1, true);
         self.set(x + 1, y + 1, true);
     }

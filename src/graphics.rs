@@ -13,10 +13,6 @@ use crate::ui::GUI;
 pub struct Game {
     board: Board,
     running: bool,
-
-    frames: usize,
-    fps: String,
-
     ui: GUI,
 }
 
@@ -31,20 +27,29 @@ impl Game {
             board: Board::new(50, 50),
             running: false,
 
-            frames: 0,
-            fps: format!("FPS: {}", ctx.time.fps() as i64),
-
             ui: GUI::new(ctx)?,
         };
         Ok(g)
     }
+
+    fn parse_messages(&mut self, ctx: &mut Context) {
+        match self.ui.get_messages(ctx) {
+            1 => {println!("Pressed Play"); self.running = true;}
+            2 => {println!("Pressed Stop"); self.running = false;}
+            3 => {println!("Pressed Step"); self.board.next_generation();}
+            _ => {}
+        }
+    }
 }
 
 impl scene_manager::Scene for Game {
-    fn update(&mut self, _ctx: &mut Context) -> Result<scene_manager::SceneSwitch, GameError> {
+    fn update(&mut self, ctx: &mut Context) -> Result<scene_manager::SceneSwitch, GameError> {        
         if self.running {
             self.board = self.board.next_generation();
         }
+
+        self.parse_messages(ctx);        
+
         Ok(scene_manager::SceneSwitch::None)
     }
 

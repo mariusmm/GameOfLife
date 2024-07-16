@@ -1,4 +1,4 @@
-use mooeye::{sprite, ui, ui::UiContent, ui::UiContainer};
+use mooeye::{sprite, ui::{self, UiContainer, UiContent}};
 use ggez::{
     context::Context,
     graphics::{
@@ -12,7 +12,7 @@ use ggez::{
 use std::time::Duration;
 
 pub struct GUI {
-    gui: ui::UiElement<()>,
+    pub gui: ui::UiElement<()>,
 }
 
 impl GUI {
@@ -42,9 +42,10 @@ impl GUI {
         );
 
         let mut top_bar = ui::containers::HorizontalBox::new();
+        let ui_buttons = ["play", "stop", "step"];
 
         top_bar.spacing = 10.;
-        for (i, s) in ["play", "stop", "step"].iter().enumerate(){
+        for (i, s) in ui_buttons.iter().enumerate(){
             let ui_sprite = sprite::Sprite::from_path(
                 format!("/icons/{}.png", s),
                 ctx,
@@ -56,8 +57,9 @@ impl GUI {
             .with_visuals(vis)
             .with_hover_visuals(hover_vis)
             .scaled(2., 2.)
+            .with_alignment(ui::Alignment::Min, ui::Alignment::Min)
             .with_tooltip(
-                graphics::Text::new(format!("{} Simulation.", s))
+                graphics::Text::new(format!("{} simulation.", s))
                     .set_scale(14.)
                     .to_owned()
                     .to_element_builder(0, ctx)
@@ -70,10 +72,13 @@ impl GUI {
             top_bar.add(ui_sprite);
         }
 
+        let spacer_width:f32 = ctx.gfx.size().0 - (ui_buttons.len()*20) as f32;
+
         let top_bar = top_bar
             .to_element_builder(0, ctx)
             .with_visuals(cont_vis)
-            .with_padding((2., 2., 2., 2.))
+            .with_padding((4., spacer_width , 4., 4.))
+            .with_alignment(ui::Alignment::Min, ui::Alignment::Min)
             .build();
 
         Ok(Self {
@@ -87,23 +92,21 @@ impl GUI {
         let mut canvas = Canvas::from_frame(ctx, None);
         canvas.set_sampler(Sampler::nearest_clamp());
 
-        let messages = self.gui.manage_messages(ctx, None);
-        for i in 1..=5 {
-            if messages.contains(&ui::UiMessage::Triggered(i)) {
-                match i {
-                    1 => println!("Play Pressed"),
-                    2 => println!("Stop Pressed"),
-                    3 => println!("Step Pressed"),
-                    _ => {},
-                };
-            }
-        }
-
         self.gui.draw_to_screen(ctx, &mut canvas, mouse_listen);
 
         canvas.finish(ctx)?;
 
         Ok(())
-    }    
+    }
+
+    pub fn get_messages(&mut self, ctx: &mut Context) -> u32 {
+        let messages = self.gui.manage_messages(ctx, None);
+        for i in 1..=5 {
+            if messages.contains(&ui::UiMessage::Triggered(i)) {
+                return i;
+            }
+        }
+        0
+    }   
 
 }

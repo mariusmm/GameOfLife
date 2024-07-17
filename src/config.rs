@@ -7,4 +7,4 @@ pub const SCREEN_SIZE: (f32, f32) = (
     GRID_SIZE.1 as f32 * GRID_CELL_SIZE.1 as f32 + 20.,
 );
 
-
+pub const TOP_BAR: f32 = 30.;

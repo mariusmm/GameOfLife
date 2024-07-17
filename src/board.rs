@@ -1,8 +1,8 @@
 use ggez::{
-    graphics::{Quad, DrawParam, Canvas, Color, Rect},
+    graphics::{DrawParam, Canvas, Color, Rect},
     input::mouse
 };
-
+use rand::Rng;
 use super::config::*;
 
 #[derive(Clone)]
@@ -18,11 +18,23 @@ pub struct Board {
 
 impl Board {
     pub fn new(width: usize, height: usize) -> Board {
-        Board {
+        let mut board = Board {
             cells: vec![Cell { alive: false }; width * height],
             width,
             height,
-        }
+        };
+        board.initialize();
+        board
+
+    }
+
+    pub fn initialize(&mut self) {
+        let total_cells = (GRID_SIZE.0 * GRID_SIZE.1) as usize;
+        let mut rng = rand::thread_rng();
+        
+        self.cells = (0..total_cells)
+            .map(|_| Cell { alive: rng.gen_bool(0.5) })
+            .collect();
     }
 
     pub fn get(&self, x: usize, y: usize) -> bool {
@@ -86,7 +98,7 @@ impl Board {
         for (i, cell) in self.cells.iter().enumerate() {
             if cell.alive {
                 let x = (i as i16 % GRID_SIZE.0) as f32 * cell_width;
-                let y = (i as i16 / GRID_SIZE.0) as f32 * cell_height;
+                let y = (i as i16 / GRID_SIZE.0) as f32 * cell_height + TOP_BAR;
 
                 let rect = Rect::new(x, y, cell_width, cell_height);
 

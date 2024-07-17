@@ -15,6 +15,8 @@ use mooeye::scene_manager;
 use crate::board::Board;
 use crate::ui::GUI;
 
+use super::config;
+
 pub struct Game {
     board: Board,
     running: bool,
@@ -29,7 +31,7 @@ impl Game {
         );
 
         let g = Game {
-            board: Board::new(50, 50),
+            board: Board::new(config::GRID_SIZE.0 as usize, config::GRID_SIZE.1 as usize),
             running: false,
 
             ui: GUI::new(ctx)?,
@@ -41,7 +43,7 @@ impl Game {
         match self.ui.get_messages(ctx) {
             1 => {println!("Pressed Play"); self.running = true;}
             2 => {println!("Pressed Stop"); self.running = false;}
-            3 => {println!("Pressed Step"); self.board.next_generation();}
+            3 => {println!("Pressed Step"); self.board = self.board.next_generation();}
             _ => {}
         }
     }
@@ -60,14 +62,15 @@ impl scene_manager::Scene for Game {
 
     fn draw(&mut self, ctx: &mut Context, mouse_listen: bool) -> Result<(), GameError> {
 
-        // Render UI
-        self.ui.draw(ctx, mouse_listen)?;
         let mut canvas = Canvas::from_frame(ctx, None);
         canvas.set_sampler(Sampler::nearest_clamp());
 
         self.board.draw_board(&mut canvas);
 
         canvas.finish(ctx)?;
+
+        // Render UI
+        self.ui.draw(ctx, mouse_listen)?;
 
         
         Ok(())

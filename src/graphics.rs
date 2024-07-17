@@ -1,8 +1,13 @@
 use ggez::{
-    graphics,
+    graphics::{
+        self,     
+        Canvas,
+        Sampler
+    },
     Context,
     GameResult,
     GameError,
+
 };
 
 use mooeye::scene_manager;
@@ -19,7 +24,7 @@ pub struct Game {
 impl Game {
     pub fn new(ctx: &mut Context) -> GameResult<Game> {
         ctx.gfx.add_font(
-            "LiberationMono",
+            "Zepto",
             graphics::FontData::from_path(ctx, "/fonts/Zepto (8px).ttf")?,
         );
 
@@ -57,6 +62,13 @@ impl scene_manager::Scene for Game {
 
         // Render UI
         self.ui.draw(ctx, mouse_listen)?;
+        let mut canvas = Canvas::from_frame(ctx, None);
+        canvas.set_sampler(Sampler::nearest_clamp());
+
+        self.board.draw_board(&mut canvas);
+
+        canvas.finish(ctx)?;
+
         
         Ok(())
     }

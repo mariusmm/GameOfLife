@@ -2,18 +2,11 @@ use ggez::{ContextBuilder, GameResult};
 mod board;
 mod graphics;
 mod ui;
+mod config;
 use graphics::Game;
 use std::env;
 use std::path;
 use mooeye::scene_manager::SceneManager;
-
-const GRID_SIZE: (i16, i16) = (30, 20);
-const GRID_CELL_SIZE: (i16, i16) = (32, 32);
-
-const SCREEN_SIZE: (f32, f32) = (
-    GRID_SIZE.0 as f32 * GRID_CELL_SIZE.0 as f32,
-    GRID_SIZE.1 as f32 * GRID_CELL_SIZE.1 as f32 + 20.,
-);
 
 fn main() -> GameResult {
     let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
@@ -27,7 +20,7 @@ fn main() -> GameResult {
 
     let ( mut ctx,  event_loop) = ContextBuilder::new("conways_game_of_life", "Jan Gras").add_resource_path(resource_dir)
         .window_setup(ggez::conf::WindowSetup::default().title("conways_game_of_life!"))
-        .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
+        .window_mode(ggez::conf::WindowMode::default().dimensions(config::SCREEN_SIZE.0, config::SCREEN_SIZE.1))
         .build()?;
 
 	let game = Game::new(&mut ctx)?;

@@ -1,3 +1,10 @@
+use ggez::{
+    graphics::{Quad, DrawParam, Canvas, Color, Rect},
+    input::mouse
+};
+
+use super::config::*;
+
 #[derive(Clone)]
 pub struct Cell {
     pub alive: bool,
@@ -72,23 +79,27 @@ impl Board {
         new_board
     }
 
-    // pub fn draw_board(&self, ctx: &mut Context, ) -> GameResult{
-    //     // Render game board
-    //     for y in 0..self.board.height {
-    //         for x in 0..self.board.width {
-    //             let color = if self.board.get(x, y) {
-    //                 graphics::Color::GREEN
-    //             } else {
-    //                 graphics::Color::WHITE
-    //             };
-    //             let rect = graphics::Rect::new_i32(x as i32 * 10, y as i32 * 10, 10, 10);
-    //             let square = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect, color)?;
-    //             graphics::draw(ctx, &square, graphics::DrawParam::default())?;
-    //         }
-    //     }
+    pub fn draw_board(&self, canvas: &mut Canvas) {
+        let cell_width = GRID_CELL_SIZE.0 as f32;
+        let cell_height = GRID_CELL_SIZE.1 as f32;
 
-    //     Ok(())
-    // }
+        for (i, cell) in self.cells.iter().enumerate() {
+            if cell.alive {
+                let x = (i as i16 % GRID_SIZE.0) as f32 * cell_width;
+                let y = (i as i16 / GRID_SIZE.0) as f32 * cell_height;
+
+                let rect = Rect::new(x, y, cell_width, cell_height);
+
+                canvas.draw(
+                    &ggez::graphics::Quad,
+                    DrawParam::new()
+                        .dest_rect(rect.into())
+                        .color(Color::WHITE),
+                );
+            }
+        }
+    }
+
 }
 
 #[cfg(test)]

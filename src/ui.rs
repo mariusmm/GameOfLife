@@ -61,6 +61,7 @@ impl GUI {
             .with_tooltip(
                 graphics::Text::new(format!("{} simulation.", s))
                     .set_scale(14.)
+                    .set_font("Zepto")
                     .to_owned()
                     .to_element_builder(0, ctx)
                     .with_visuals(cont_vis)

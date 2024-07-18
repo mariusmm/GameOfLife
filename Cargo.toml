@@ -6,3 +6,4 @@ edition = "2018"
 [dependencies]
 lib = "0.0.0"
 rand = "0.8"
+ggez = "0.9.3"

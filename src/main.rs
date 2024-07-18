@@ -6,7 +6,7 @@ use std::io::{self, Write};
 #[warn(non_upper_case_globals)]
 #[warn(dead_code)]
 
-const colors: [&str; 9] = ["🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "⬛", "⬜", "🟫"];
+const COLORS: [&str; 9] = ["🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "⬛", "⬜", "🟫"];
 
 mod board;
 
@@ -123,7 +123,7 @@ fn choose_colors() {
     println!("Choose the colors for Alive and Dead:");
 
     
-    for (i, &color) in colors.iter().enumerate() {
+    for (i, &color) in COLORS.iter().enumerate() {
         println!("{}. {}", i + 1, color);
     }
 
@@ -141,7 +141,7 @@ fn get_color_choice(name: &str) -> String {
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
         match input.trim().parse::<usize>() {
-            Ok(num) if num >= 1 && num <= 9 => return colors[num - 1].to_string(),
+            Ok(num) if num >= 1 && num <= 9 => return COLORS[num - 1].to_string(),
             _ => println!("Invalid input, please enter a number between 1 and 9."),
         }
     }

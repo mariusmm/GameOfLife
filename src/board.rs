@@ -7,7 +7,7 @@
 
 static mut ALIVE_EMOJI: &str = "🟥";
 static mut DEAD_EMOJI: &str = "🟨";
-
+    
 #[derive(Clone)]
 struct Cell {
     pub alive: bool,

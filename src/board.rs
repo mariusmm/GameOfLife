@@ -1,3 +1,7 @@
+use std::thread::sleep;
+use std::time::Duration;
+use std::sync::{Arc, Mutex};
+
 #[derive(Clone)]
 struct Cell {
     pub alive: bool,
@@ -77,13 +81,14 @@ impl Board {
         for y_idx in 0..self.height {
             for x_idx in 0..self.width {
                 if self.get(x_idx, y_idx) {
-                    print!("\u{2B1C}");
+                    print!("🌼 ");
                 } else {
-                    print!("\u{2B1B}");
+                    print!("⚫️ ");
                 }
             }
             println!();
         }
+        sleep(Duration::from_millis(100));
     }
 
     pub fn random_init(&mut self) {
@@ -120,14 +125,14 @@ mod tests {
         board.set(0, 0, true);
         board.set(1, 2, true);
         board.set(2, 3, true);
-        board.print();
+        board.println();
     }
 
     #[test]
     fn test_board() {
         let mut board = Board::new(5, 5);
         board.set_glider(1, 1);
-        board.print();
+        board.println();
     }
 
     #[test]
@@ -150,7 +155,7 @@ mod tests {
     fn test_apply_rules() {
         let mut board = Board::new(5, 5);
         board.set_glider(1, 1);
-        board.print();
+        board.println();
         let rules = board.apply_rules(1, 1);
         assert!(!rules);
         let rules = board.apply_rules(1, 2);

@@ -1,3 +1,13 @@
+#[warn(non_snake_case)] //convert snake case on default
+//more colors ["🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "⬛", "⬜", "🟫"]
+//const ALIVE_EMOJI: &str = "🟥";
+//const DEAD_EMOJI: &str = "🟨";
+
+//const COLORS: [&str; 9] = ["🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "⬛", "⬜", "🟫"];
+
+static mut ALIVE_EMOJI: &str = "🟥";
+static mut DEAD_EMOJI: &str = "🟨";
+    
 #[derive(Clone)]
 struct Cell {
     pub alive: bool,
@@ -17,6 +27,7 @@ impl Board {
             height,
         }
     }
+
 
     pub fn get(&self, x: usize, y: usize) -> bool {
         assert!(x < self.width && y < self.height);
@@ -74,7 +85,7 @@ impl Board {
     #[allow(dead_code)]
     pub fn print(&self) {
         println!("**************************************************************************");
-        for y_idx in 0..self.height {
+        /*for y_idx in 0..self.height {
             for x_idx in 0..self.width {
                 if self.get(x_idx, y_idx) {
                     print!("\u{2B1C}");
@@ -83,6 +94,16 @@ impl Board {
                 }
             }
             println!();
+        }*/
+        for y in 0..self.height {
+            for x in 0..self.width {
+                if self.get(x, y) {
+                    print!("{}", unsafe{ALIVE_EMOJI});
+                } else {
+                    print!("{}", unsafe{DEAD_EMOJI});
+                }
+            }
+            println!(); // New line at the end of each row
         }
     }
 
@@ -103,6 +124,17 @@ impl Board {
         self.set(x, y - 1, true);
         self.set(x + 1, y, true);
         self.set(x - 1, y + 1, true);
+        self.set(x, y + 1, true);
+        self.set(x + 1, y + 1, true);
+    }
+    pub fn set_blinker(&mut self, x:usize, y:usize){
+        self.set(x, y, true);
+        self.set(x, y + 1, true);
+        self.set(x, y + 2, true);
+    }
+    pub fn set_block(&mut self, x:usize, y:usize){
+        self.set(x, y, true);
+        self.set(x + 1, y, true);
         self.set(x, y + 1, true);
         self.set(x + 1, y + 1, true);
     }
@@ -157,5 +189,12 @@ mod tests {
         assert!(rules);
         let rules = board.apply_rules(1, 3);
         assert!(rules);
+    }
+}
+
+pub fn set_colors(alive: String, dead: String) {
+    unsafe {
+        ALIVE_EMOJI = Box::leak(alive.into_boxed_str());
+        DEAD_EMOJI = Box::leak(dead.into_boxed_str());
     }
 }

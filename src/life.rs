@@ -52,7 +52,7 @@ pub fn life(grid: &[u8], next: &mut [u8], size: i32)
             }
         });
 
-        // let _ = thread.join();
+        let _ = thread.join();
         let _ = other.join();
     });
 }

@@ -31,7 +31,7 @@ impl Game {
         );
 
         let g = Game {
-            board: Board::new(config::GRID_SIZE.0 as usize, config::GRID_SIZE.1 as usize),
+            board: Board::new(config::GRID_SIZE.0 as usize, config::GRID_SIZE.1 as usize, false),
             running: false,
 
             ui: GUI::new(ctx)?,

@@ -4,8 +4,8 @@ mod tests {
     use std::time::{Duration, Instant};
 
 
-    fn test_board(width: usize, height: usize, _threading: bool) -> Duration {
-        let board = Board::new(width, height);
+    fn test_board(width: usize, height: usize, threading: bool) -> Duration {
+        let board = Board::new(width, height, threading);
         let start = Instant::now();
         board.next_generation();
         start.elapsed()

@@ -28,13 +28,6 @@ impl Board {
         self.cells[y * self.width + x].alive = alive;
     }
 
-    pub fn get_height(&self) -> usize {
-        self.height
-    }
-
-    pub fn get_width(&self) -> usize {
-        self.width
-    }
     fn count_neighbors(&self, x: i32, y: i32) -> usize {
         let mut count = 0;
 
@@ -77,13 +70,14 @@ impl Board {
         for y_idx in 0..self.height {
             for x_idx in 0..self.width {
                 if self.get(x_idx, y_idx) {
-                    print!("\u{2B1C}");
+                    print!("🫡\t")
                 } else {
-                    print!("\u{2B1B}");
+                    print!("💀\t");
                 }
             }
             println!();
         }
+        //sleep(std::time::Duration::from_millis(100));
     }
 
     pub fn random_init(&mut self) {

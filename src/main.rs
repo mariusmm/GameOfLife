@@ -1,74 +1,82 @@
 use std::env;
 use std::time::Instant;
+use std::thread;
+use std::sync::{Arc, Mutex};
 
 mod board;
+
 fn main() {
-    const WIDTH: usize = 1000;
-    const HEIGHT: usize = 1000;
+    const WIDTH: usize = 20;
+    const HEIGHT: usize = 20;
     const ITERATIONS: usize = 100;
 
     let args: Vec<String> = env::args().collect();
 
     println!("Starting game of life!");
-    let mut my_board_a;
-    let mut my_board_b;
-    let num_iteracions;
-
-    if args.len() >= 4 {
-        let width = args[1].parse::<usize>().unwrap();
-        let height = args[2].parse::<usize>().unwrap();
-        let iterations = args[3].parse::<usize>().unwrap();
-        println!(
-            "Width: {} height: {} iterations: {} ",
-            width, height, iterations
-        );
-        my_board_a = board::Board::new(width, height);
-        my_board_b = board::Board::new(width, height);
-        num_iteracions = iterations;
+    let (width, height, num_iterations) = if args.len() >= 4 {
+        let w = args[1].parse::<usize>().unwrap();
+        let h = args[2].parse::<usize>().unwrap();
+        let i = args[3].parse::<usize>().unwrap();
+        println!("Width: {} height: {} iterations: {}", w, h, i);
+        (w, h, i)
     } else {
-        my_board_a = board::Board::new(WIDTH, HEIGHT);
-        my_board_b = board::Board::new(WIDTH, HEIGHT);
-        num_iteracions = ITERATIONS;
-        println!(
-            "Width: {} height: {} iterations: {} ",
-            WIDTH, HEIGHT, ITERATIONS
-        );
-    }
+        println!("Width: {} height: {} iterations: {}", WIDTH, HEIGHT, ITERATIONS);
+        (WIDTH, HEIGHT, ITERATIONS)
+    };
 
-    my_board_a.random_init();
-    my_board_a.set_glider(5, 5);
+    let board_a = Arc::new(Mutex::new(board::Board::new(width, height)));
+    let board_b = Arc::new(Mutex::new(board::Board::new(width, height)));
 
-    let mut ab = true;
+    board_a.lock().unwrap().random_init();
+    board_a.lock().unwrap().set_glider(5, 5);
 
     let start = Instant::now();
 
-    for _ in 0..num_iteracions {
-        if ab {
-            for x_idx in 0..my_board_a.get_width() {
-                for y_idx in 0..my_board_a.get_height() {
-                    let alive = my_board_a.apply_rules(x_idx as i32, y_idx as i32);
-                    my_board_b.set(x_idx, y_idx, alive);
-                }
-            }
-            //my_board_b.print();
+    let num_threads = thread::available_parallelism().map(|n| n.get()).unwrap_or(4);
+    println!("Number of threads: {}", num_threads);
+
+    for i in 0..num_iterations {
+        let (src_board, dst_board) = if i % 2 == 0 {
+            (Arc::clone(&board_a), Arc::clone(&board_b))
         } else {
-            for x_idx in 0..my_board_a.get_width() {
-                for y_idx in 0..my_board_a.get_height() {
-                    let alive = my_board_b.apply_rules(x_idx as i32, y_idx as i32);
-                    my_board_a.set(x_idx, y_idx, alive);
-                }
-            }
-            //my_board_a.print();
+            (Arc::clone(&board_b), Arc::clone(&board_a))
+        };
+
+        let chunk_size = (height + num_threads - 1) / num_threads;
+
+        let handles: Vec<_> = (0..num_threads)
+            .map(|t| {
+                let src = Arc::clone(&src_board);
+                let dst = Arc::clone(&dst_board);
+                thread::spawn(move || {
+                    let start_y = t * chunk_size;
+                    let end_y = (start_y + chunk_size).min(height);
+                    let src_guard = src.lock().unwrap();
+                    let mut dst_guard = dst.lock().unwrap();
+
+                    for y in start_y..end_y {
+                        for x in 0..width {
+                            let alive = src_guard.apply_rules(x as i32, y as i32);
+                            dst_guard.set(x, y, alive);
+                        }
+                    }
+                })
+            })
+            .collect();
+
+        for handle in handles {
+            handle.join().unwrap();
         }
-        ab = !ab;
+
+        // dst_board.lock().unwrap().print();
     }
 
     let duration = start.elapsed();
 
-    if ab {
-        //my_board_a.print();
+    if num_iterations % 2 == 0 {
+        //board_a.lock().unwrap().print();
     } else {
-        //my_board_b.print();
+        //board_b.lock().unwrap().print();
     }
 
     println!("Elapsed time: {:?}", duration);

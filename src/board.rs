@@ -1,5 +1,6 @@
 use ggez::graphics::{DrawParam, Canvas, Color, Rect};
 
+use ggez::Context;
 use rand::Rng;
 use std::thread;
 use std::sync::{Arc, Mutex};
@@ -163,6 +164,22 @@ impl Board {
                         .color(Color::WHITE),
                 );
             }
+        }
+    }
+
+    pub fn input_cell(&mut self, ctx: &mut Context){
+        let position = ctx.mouse.position();
+    
+        let cell_width = GRID_CELL_SIZE.0 as f32;
+        let cell_height = GRID_CELL_SIZE.1 as f32;
+        
+        let x = ((position.x / cell_width) as usize).min(self.width - 1);
+        let y = (((position.y - TOP_BAR) / cell_height) as usize).min(self.height - 1);
+        
+        let index = y * self.width + x;
+        
+        if index < self.cells.len() {
+            self.cells[index].alive = !self.cells[index].alive;
         }
     }
 }

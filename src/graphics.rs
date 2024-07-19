@@ -7,6 +7,7 @@ use ggez::{
     Context,
     GameResult,
     GameError,
+    input::mouse::MouseButton,
 
 };
 
@@ -39,12 +40,12 @@ impl Game {
         Ok(g)
     }
 
-    fn parse_messages(&mut self, ctx: &mut Context) {
+    fn parse_messages(&mut self, ctx: &mut Context) -> bool{
         match self.ui.get_messages(ctx) {
-            1 => {println!("Pressed Play"); self.running = true;}
-            2 => {println!("Pressed Stop"); self.running = false;}
-            3 => {println!("Pressed Step"); self.board = self.board.next_generation();}
-            _ => {}
+            1 => {println!("Pressed Play"); self.running = true; true}
+            2 => {println!("Pressed Stop"); self.running = false; true}
+            3 => {println!("Pressed Step"); self.board = self.board.next_generation(); true}
+            _ => {false}
         }
     }
 }
@@ -55,7 +56,9 @@ impl scene_manager::Scene for Game {
             self.board = self.board.next_generation();
         }
 
-        self.parse_messages(ctx);        
+        if self.parse_messages(ctx) == false && ctx.mouse.button_just_pressed(MouseButton::Left){
+            self.board.input_cell(ctx);
+        }       
 
         Ok(scene_manager::SceneSwitch::None)
     }

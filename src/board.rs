@@ -1,6 +1,6 @@
 use ggez::{
     graphics::{DrawParam, Canvas, Color, Rect},
-    input::mouse
+    //input::mouse
 };
 use rand::Rng;
 use super::config::*;
@@ -29,7 +29,7 @@ impl Board {
     }
 
     pub fn initialize(&mut self) {
-        let total_cells = (GRID_SIZE.0 * GRID_SIZE.1) as usize;
+        let total_cells = (self.width * self.height) as usize;
         let mut rng = rand::thread_rng();
         
         self.cells = (0..total_cells)
@@ -92,6 +92,7 @@ impl Board {
     }
 
     pub fn draw_board(&self, canvas: &mut Canvas) {
+        // Board will adapt to the screen based on the cell size configured
         let cell_width = GRID_CELL_SIZE.0 as f32;
         let cell_height = GRID_CELL_SIZE.1 as f32;
 
@@ -112,36 +113,4 @@ impl Board {
         }
     }
 
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_new_board() {
-        let board = Board::new(3, 3);
-        assert_eq!(board.width, 3);
-        assert_eq!(board.height, 3);
-        assert_eq!(board.cells.len(), 9);
-        assert!(board.cells.iter().all(|cell| !cell.alive));
-    }
-
-    #[test]
-    fn test_set_and_get() {
-        let mut board = Board::new(3, 3);
-        board.set(1, 1, true);
-        assert!(board.get(1, 1));
-        board.set(1, 1, false);
-        assert!(!board.get(1, 1));
-    }
-
-    #[test]
-    fn test_count_neighbors() {
-        let mut board = Board::new(3, 3);
-        board.set(0, 0, true);
-        board.set(0, 1, true);
-        board.set(1, 0, true);
-        assert_eq!(board.count_neighbors(1, 1), 3);
-    }
 }

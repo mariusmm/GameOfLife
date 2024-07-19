@@ -1,12 +1,21 @@
-use ggez::{ContextBuilder, GameResult};
+
+// Game Logic
 mod board;
+
+// Graphics
 mod graphics;
-mod ui;
 mod config;
 use graphics::Game;
+use ggez::{ContextBuilder, GameResult};
+
+//UI
+mod ui;
+use mooeye::scene_manager::SceneManager;
+
+// Misc
 use std::env;
 use std::path;
-use mooeye::scene_manager::SceneManager;
+mod board_test;
 
 fn main() -> GameResult {
     let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {

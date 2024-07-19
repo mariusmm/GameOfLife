@@ -12,7 +12,7 @@ use ggez::{
 use std::time::Duration;
 
 //TODO: Use TOP_BAR for top bar drawing
-use super::config;
+//use super::config;
 
 pub struct GUI {
     pub gui: ui::UiElement<()>,

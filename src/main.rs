@@ -1,10 +1,10 @@
 use std::env;
 use std::time::Instant;
-
+use std::sync::{Arc, Mutex};
 mod board;
 fn main() {
-    const WIDTH: usize = 1000;
-    const HEIGHT: usize = 1000;
+    const WIDTH: usize = 20;
+    const HEIGHT: usize = 20;
     const ITERATIONS: usize = 100;
 
     let args: Vec<String> = env::args().collect();
@@ -50,7 +50,9 @@ fn main() {
                     my_board_b.set(x_idx, y_idx, alive);
                 }
             }
-            //my_board_b.print();
+            my_board_b.print();
+            println!(" ");
+            println!(" ");
         } else {
             for x_idx in 0..my_board_a.get_width() {
                 for y_idx in 0..my_board_a.get_height() {
@@ -58,7 +60,9 @@ fn main() {
                     my_board_a.set(x_idx, y_idx, alive);
                 }
             }
-            //my_board_a.print();
+            my_board_a.print();
+            println!(" ");
+            println!(" ");
         }
         ab = !ab;
     }

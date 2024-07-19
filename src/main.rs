@@ -3,9 +3,9 @@
 mod board;
 
 // Graphics
-mod graphics;
+mod game;
 mod config;
-use graphics::Game;
+use game::Game;
 use ggez::{ContextBuilder, GameResult};
 
 //UI

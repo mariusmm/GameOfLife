@@ -1,11 +1,13 @@
+
+
 #[derive(Clone)]
 pub struct Cell {
     alive: bool,
 }
 pub struct Board {
     cells: Vec<Cell>,
-    width: usize,
-    height: usize,
+    pub width: usize,
+    pub height: usize,
 }
 fn decide_random(x:usize, y: usize, count :usize) -> bool{
     let rnd = x*3 + y + count;
@@ -26,11 +28,19 @@ impl Board {
 
     }
 
-    fn get(&self, x: usize, y: usize) -> bool {
+    pub fn get_height(&self)-> usize{
+        self.height
+    }
+
+    pub fn get_width(&self)-> usize{
+        self.width
+    }
+
+    pub fn get(&self, x: usize, y: usize) -> bool {
         self.cells[y * self.width + x].alive
     }
 
-    fn set(&mut self, x: usize, y: usize, alive: bool) {
+    pub fn set(&mut self, x: usize, y: usize, alive: bool) {
         self.cells[y * self.width + x].alive = alive;
     }
 
@@ -55,7 +65,7 @@ impl Board {
         count
     }
 
-    fn apply_rules(&self, x: i32, y: i32) -> bool {
+    pub fn apply_rules(self, x: i32, y: i32) -> bool {
         let num_neigh = self.count_neighbors(x, y);
         if self.get(x as usize, y as usize) {
             match num_neigh {
@@ -97,19 +107,6 @@ impl Board {
                 let rnd=decide_random(x,y, count);
                 self.set(x, y, rnd);
                 count += 1;
-            }
-        }
-    }
-    pub fn update(&mut self){
-        let mut new_board = Board::new(self.width, self.height);
-        for x in 0..self.height{
-            for y in 0..self.width{
-                new_board.set(x, y, self.apply_rules(x as i32, y as i32));
-            }
-        }
-        for x in 0..self.height{
-            for y in 0..self.width{
-                self.set(x, y, new_board.get(x, y));
             }
         }
     }

@@ -32,9 +32,6 @@ impl Board {
         self.height
     }
 
-    pub fn get_width(&self) -> usize {
-        self.width
-    }
     fn count_neighbors(&self, x: i32, y: i32) -> usize {
         let mut count = 0;
 
@@ -73,7 +70,7 @@ impl Board {
 
     #[allow(dead_code)]
     pub fn print(&self) {
-        println!("**************************************************************************");
+        print!("{}[2J", 27 as char);
         for y_idx in 0..self.height {
             for x_idx in 0..self.width {
                 if self.get(x_idx, y_idx) {
@@ -86,6 +83,7 @@ impl Board {
         }
     }
 
+    #[allow(dead_code)]
     pub fn random_init(&mut self) {
         for x_idx in 0..self.width {
             for y_idx in 0..self.height {
@@ -99,6 +97,59 @@ impl Board {
     }
 
     pub fn set_glider(&mut self, x: usize, y: usize) {
+        assert!(x >= 1 && y >= 1);
+        self.set(x, y - 1, true);
+        self.set(x + 1, y, true);
+        self.set(x - 1, y + 1, true);
+        self.set(x, y + 1, true);
+        self.set(x + 1, y + 1, true);
+    }
+
+    pub fn set_block(&mut self, x: usize, y: usize) {
+        assert!(x >= 1 && y >= 1);
+        self.set(x, y, true);
+        self.set(x + 1, y, true);
+        self.set(x + 1, y + 1, true);
+        self.set(x, y + 1, true);
+    }
+
+    pub fn set_beehive(&mut self, x: usize, y: usize) {
+        assert!(x >= 1 && y >= 1);
+        self.set(x, y - 1, true);
+        self.set(x + 1, y, true);
+        self.set(x - 1, y + 1, true);
+        self.set(x, y + 1, true);
+        self.set(x + 1, y + 1, true);
+    }
+
+    pub fn set_loaf(&mut self, x: usize, y: usize) {
+        assert!(x >= 1 && y >= 1);
+        self.set(x, y - 1, true);
+        self.set(x + 1, y, true);
+        self.set(x - 1, y + 1, true);
+        self.set(x, y + 1, true);
+        self.set(x + 1, y + 1, true);
+    }
+
+    pub fn set_blinker(&mut self, x: usize, y: usize) {
+        assert!(x >= 1 && y >= 1);
+        self.set(x, y - 1, true);
+        self.set(x + 1, y, true);
+        self.set(x - 1, y + 1, true);
+        self.set(x, y + 1, true);
+        self.set(x + 1, y + 1, true);
+    }
+
+    pub fn set_toad(&mut self, x: usize, y: usize) {
+        assert!(x >= 1 && y >= 1);
+        self.set(x, y - 1, true);
+        self.set(x + 1, y, true);
+        self.set(x - 1, y + 1, true);
+        self.set(x, y + 1, true);
+        self.set(x + 1, y + 1, true);
+    }
+
+    pub fn set_beacon(&mut self, x: usize, y: usize) {
         assert!(x >= 1 && y >= 1);
         self.set(x, y - 1, true);
         self.set(x + 1, y, true);
